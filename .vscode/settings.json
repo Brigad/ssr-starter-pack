@@ -8,6 +8,7 @@
     "**/CVS": true,
     "**/.DS_Store": true,
     "**/.idea": true,
+    "**/.vscode": true,
     "**/.github": true,
     "**/dist": true,
     "**/node_modules": true
