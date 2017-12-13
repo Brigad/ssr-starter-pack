@@ -20,6 +20,7 @@ const babelSettings = {
 };
 
 const roots = [
+  'node_modules',
   path.join(__dirname, 'node_modules'),
   path.join(__dirname, 'client'),
 ];
@@ -62,11 +63,13 @@ const getCommonCSSLoaders = () => [
 const rules = [
   {
     test: /\.js$/,
+    exclude: /node_modules/,
     loader: 'babel-loader',
     options: babelSettings,
   },
   {
     test: /\.css$/,
+    exclude: /node_modules/,
     loader: extractCSS.extract({
       fallback: 'style-loader',
       use: [
@@ -76,6 +79,7 @@ const rules = [
   },
   {
     test: /\.scss$/,
+    exclude: /node_modules/,
     loader: extractCSS.extract({
       fallback: 'style-loader',
       use: [

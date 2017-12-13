@@ -19,6 +19,7 @@ const babelSettings = {
 };
 
 const roots = [
+  'node_modules',
   path.join(__dirname, 'node_modules'),
   path.join(__dirname, 'client'),
 ];
@@ -64,17 +65,20 @@ const getCommonCSSLoaders = () => [
 const rules = [
   {
     test: /\.js$/,
+    exclude: /node_modules/,
     loader: 'babel-loader',
     options: babelSettings,
   },
   {
     test: /\.css$/,
+    exclude: /node_modules/,
     use: [
       ...getCommonCSSLoaders(),
     ],
   },
   {
     test: /\.scss$/,
+    exclude: /node_modules/,
     use: [
       ...getCommonCSSLoaders(),
       ...(!IS_PRODUCTION ? [{
@@ -233,6 +237,7 @@ const config = {
   ],
   output: {
     filename: !IS_PRODUCTION ? 'client/[name].js' : 'client/[name].[chunkhash].js',
+    sourceMapFilename: !IS_PRODUCTION ? 'client/[name].map.js' : 'client/[name].[chunkhash].map.js',
     chunkFilename: !IS_PRODUCTION ? 'client/chunks/[name].chunk.js' : 'client/chunks/[name].[chunkhash].chunk.js',
     path: path.join(__dirname, 'public/dist'),
     publicPath: PUBLIC_PATH,

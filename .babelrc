@@ -69,34 +69,6 @@
         ],
         "@babel/transform-react-jsx-source"
       ]
-    },
-    "mobile": {
-      "presets": [
-        "react-native"
-      ]
-    },
-    "test": {
-      "presets": [
-        [
-          "@babel/env",
-          {
-            "targets": {
-              "node": "8.9.3"
-            },
-            "useBuiltIns": "usage"
-          }
-        ],
-        "@babel/react",
-        "@babel/stage-0"
-      ],
-      "plugins": [
-        [
-          "@babel/syntax-object-rest-spread",
-          {
-            "useBuiltIns": true
-          }
-        ]
-      ]
     }
   }
 }
