@@ -1,0 +1,10 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./client/",
+    "allowSyntheticDefaultImports": true
+  },
+  "exclude": [
+    "public/dist",
+    "node_modules"
+  ]
+}

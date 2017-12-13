@@ -16,18 +16,24 @@ const routes = (
   </Route>
 );
 
-const getChildRoutes = childRoutes => React.Children.map(childRoutes, ({ props: { exact, path, component, children } }) => ({
-  exact,
-  path,
-  component,
-  routes: children ? getChildRoutes(children) : children,
-}));
+const getChildRoutes = childRoutes =>
+  React.Children.map(
+    childRoutes,
+    ({ props: { exact, path, component, children } }) => ({
+      exact,
+      path,
+      component,
+      routes: children ? getChildRoutes(children) : children,
+    }),
+  );
 
-const routesArray = [{
-  exact: routes.props.exact,
-  path: routes.props.path,
-  component: routes.props.component,
-  routes: getChildRoutes(routes.props.children),
-}];
+const routesArray = [
+  {
+    exact: routes.props.exact,
+    path: routes.props.path,
+    component: routes.props.component,
+    routes: getChildRoutes(routes.props.children),
+  },
+];
 
 export default routesArray;

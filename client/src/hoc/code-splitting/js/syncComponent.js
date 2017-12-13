@@ -1,5 +1,5 @@
-import React from 'react';
 import PropTypes from 'prop-types';
+import React from 'react';
 
 const syncComponent = (chunkName, mod) => {
   const Component = mod.default ? mod.default : mod;
@@ -9,9 +9,7 @@ const syncComponent = (chunkName, mod) => {
       staticContext.splitPoints.push(chunkName);
     }
 
-    return (
-      <Component {...otherProps} />
-    );
+    return <Component {...otherProps} />;
   };
 
   SyncComponent.propTypes = {

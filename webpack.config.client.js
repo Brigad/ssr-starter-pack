@@ -132,6 +132,10 @@ const devPlugins = [
   }),
   new webpack.HotModuleReplacementPlugin(),
   new webpack.NoEmitOnErrorsPlugin(),
+  new CircularDependencyPlugin({
+    exclude: /node_modules/,
+    failOnError: true,
+  }),
   function () {
     this.plugin('done', (stats) => {
       notifier.notify({
