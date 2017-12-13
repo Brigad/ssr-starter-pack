@@ -168,7 +168,10 @@ const config = {
   target: 'node',
   devtool: !IS_PRODUCTION ? 'eval' : undefined,
   bail: IS_PRODUCTION,
-  entry: ['./client/src/entry/js/polyfills', './client/src/entry/js/server'],
+  entry: [
+    './client/src/entry/js/polyfills',
+    './client/src/entry/js/server',
+  ],
   output: {
     filename: 'server/[name].js',
     sourceMapFilename: 'server/[name].map.js',

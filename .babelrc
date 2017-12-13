@@ -6,7 +6,7 @@
           "@babel/env",
           {
             "modules": false,
-            "useBuiltIns": "usage"
+            "useBuiltIns": "entry"
           }
         ],
         "@babel/react",
@@ -29,7 +29,7 @@
           "@babel/env",
           {
             "modules": false,
-            "useBuiltIns": "usage",
+            "useBuiltIns": "entry",
             "uglify": "true"
           }
         ],
@@ -54,7 +54,7 @@
               "node": "8.9.3"
             },
             "modules": false,
-            "useBuiltIns": "usage"
+            "useBuiltIns": "entry"
           }
         ],
         "@babel/react",
