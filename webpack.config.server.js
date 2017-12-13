@@ -1,4 +1,6 @@
 const path = require('path');
+const jsonStableStringify = require('json-stable-stringify');
+const xxHash = require('xxhashjs');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
@@ -13,6 +15,7 @@ const PUBLIC_PATH = !IS_PRODUCTION || IS_LOCAL ? '/dist/' : process.env.ASSETS_U
 
 const babelSettings = {
   extends: path.join(__dirname, '.babelrc'),
+  forceEnv: 'server',
   cacheDirectory: !IS_PRODUCTION,
 };
 
@@ -27,6 +30,8 @@ const extractCSS = new ExtractTextPlugin({
 });
 
 const stripUselessLoaderOptions = value => value || undefined;
+
+const hash = str => xxHash.h32(jsonStableStringify(str), 0).toString(16);
 
 const getCommonCSSLoaders = () => [
   {
@@ -94,23 +99,34 @@ const rules = [
         loader: 'url-loader',
         options: {
           name: 'images/[name].[hash].[ext]',
-          limit: 20000,
+          limit: 1,
           emitFile: false,
         },
       },
-      {
+      ({ resource }) => ({
         loader: 'image-webpack-loader',
         options: {
           bypassOnDebug: true,
           mozjpeg: {
-            quality: 85,
+            quality: 90,
           },
           pngquant: {
-            quality: '80-90',
+            quality: '90-95',
             speed: 1,
           },
+          svgo: {
+            plugins: [
+              {
+                cleanupIDs: {
+                  prefix: hash(path.relative(__dirname, resource)),
+                  minify: true,
+                  remove: true,
+                },
+              },
+            ],
+          },
         },
-      },
+      }),
     ],
   },
 ];
@@ -124,15 +140,6 @@ const devPlugins = [
 ];
 
 const prodPlugins = [
-  new webpack.optimize.UglifyJsPlugin({
-    compress: {
-      warnings: false,
-      comparisons: false,
-    },
-    output: {
-      comments: false,
-    },
-  }),
   new webpack.optimize.ModuleConcatenationPlugin(),
   new Md5HashPlugin(),
   new ManifestPlugin({
@@ -155,11 +162,12 @@ const plugins = [
 const config = {
   name: 'server',
   target: 'node',
-  devtool: !IS_PRODUCTION ? 'inline-source-map' : undefined,
+  devtool: !IS_PRODUCTION ? 'eval' : undefined,
   bail: IS_PRODUCTION,
   entry: ['./client/src/entry/js/polyfills', './client/src/entry/js/server'],
   output: {
     filename: 'server/[name].js',
+    sourceMapFilename: 'server/[name].map.js',
     path: path.join(__dirname, 'public/dist'),
     publicPath: PUBLIC_PATH,
     libraryTarget: 'commonjs2',

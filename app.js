@@ -7,7 +7,7 @@ const manifests = {};
 manifests.server = require('./public/dist/server-manifest');
 manifests.client = require('./public/dist/client-manifest');
 
-const PORT_NUMBER = process.env.PORT || 3000;
+const PORT_NUMBER = process.env.PORT || 8080;
 const app = express();
 
 app.use(compression());

@@ -1,8 +1,11 @@
 const path = require('path');
+const jsonStableStringify = require('json-stable-stringify');
+const xxHash = require('xxhashjs');
 const webpack = require('webpack');
 const autoprefixer = require('autoprefixer');
 const NameAllModulesPlugin = require('name-all-modules-plugin');
 const ManifestPlugin = require('webpack-manifest-plugin');
+const CircularDependencyPlugin = require('circular-dependency-plugin');
 const notifier = require('node-notifier');
 
 const NODE_ENV = process.env.NODE_ENV === 'production' ? 'production' : 'development';
@@ -22,9 +25,16 @@ const roots = [
 
 const stripUselessLoaderOptions = value => value || undefined;
 
+const hash = str => xxHash.h32(jsonStableStringify(str), 0).toString(16);
+
 const getCommonCSSLoaders = () => [
   {
     loader: 'style-loader',
+    options: IS_PRODUCTION
+      ? {
+        hmr: false,
+      }
+      : undefined,
   },
   {
     loader: 'css-loader',
@@ -85,22 +95,33 @@ const rules = [
         loader: 'url-loader',
         options: {
           name: 'images/[name].[hash].[ext]',
-          limit: 20000,
+          limit: 1,
         },
       },
-      {
+      ({ resource }) => ({
         loader: 'image-webpack-loader',
         options: {
           bypassOnDebug: true,
           mozjpeg: {
-            quality: 85,
+            quality: 90,
           },
           pngquant: {
-            quality: '80-90',
+            quality: '90-95',
             speed: 1,
           },
+          svgo: {
+            plugins: [
+              {
+                cleanupIDs: {
+                  prefix: hash(path.relative(__dirname, resource)),
+                  minify: true,
+                  remove: true,
+                },
+              },
+            ],
+          },
         },
-      },
+      }),
     ],
   },
 ];
@@ -136,6 +157,7 @@ const prodPlugins = [
     output: {
       comments: false,
     },
+    sourceMap: true,
   }),
   new webpack.optimize.ModuleConcatenationPlugin(),
   new webpack.NamedModulesPlugin(),
@@ -150,6 +172,7 @@ const prodPlugins = [
   new ManifestPlugin({
     fileName: 'client-manifest.json',
     publicPath: PUBLIC_PATH,
+    filter: ({ path: filePath }) => !filePath.endsWith('.map.js'),
   }),
 ];
 
@@ -162,7 +185,7 @@ const plugins = [
     async: 'common',
     children: true,
     minChunks: (module, count) => {
-      if (module.resource && (/^.*\.(css|scss)$/).test(module.resource)) {
+      if (module.resource && /^.*\.(css|scss)$/.test(module.resource)) {
         return false;
       }
       return count >= 3 && module.context && !module.context.includes('node_modules');
@@ -197,7 +220,7 @@ const devEntries = !IS_PRODUCTION ? [
 const config = {
   name: 'client',
   target: 'web',
-  devtool: !IS_PRODUCTION ? 'eval' : false,
+  devtool: !IS_PRODUCTION ? 'eval' : 'hidden-source-map',
   bail: IS_PRODUCTION,
   entry: [
     './client/src/entry/js/polyfills',

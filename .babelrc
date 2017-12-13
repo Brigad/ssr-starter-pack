@@ -1,20 +1,102 @@
 {
-  "plugins": [
-    "transform-decorators-legacy",
-    "transform-object-rest-spread",
-    "transform-react-jsx-source"
-  ],
-  "presets": [
-    ["es2015", { "modules": false }],
-    "react",
-    "stage-0"
-  ],
   "env": {
     "development": {
-      "plugins": ["react-hot-loader/babel"]
+      "presets": [
+        [
+          "@babel/env",
+          {
+            "modules": false,
+            "useBuiltIns": "usage"
+          }
+        ],
+        "@babel/react",
+        "@babel/stage-0"
+      ],
+      "plugins": [
+        [
+          "@babel/syntax-object-rest-spread",
+          {
+            "useBuiltIns": true
+          }
+        ],
+        "@babel/transform-react-jsx-source",
+        "react-hot-loader/babel"
+      ]
+    },
+    "production": {
+      "presets": [
+        [
+          "@babel/env",
+          {
+            "modules": false,
+            "useBuiltIns": "usage",
+            "uglify": "true"
+          }
+        ],
+        "@babel/react",
+        "@babel/stage-0"
+      ],
+      "plugins": [
+        [
+          "@babel/syntax-object-rest-spread",
+          {
+            "useBuiltIns": true
+          }
+        ]
+      ]
+    },
+    "server": {
+      "presets": [
+        [
+          "@babel/env",
+          {
+            "targets": {
+              "node": "8.9.3"
+            },
+            "modules": false,
+            "useBuiltIns": "usage"
+          }
+        ],
+        "@babel/react",
+        "@babel/stage-0"
+      ],
+      "plugins": [
+        [
+          "@babel/syntax-object-rest-spread",
+          {
+            "useBuiltIns": true
+          }
+        ],
+        "@babel/transform-react-jsx-source"
+      ]
+    },
+    "mobile": {
+      "presets": [
+        "react-native"
+      ]
     },
     "test": {
-      "plugins": ["transform-es2015-modules-commonjs"]
+      "presets": [
+        [
+          "@babel/env",
+          {
+            "targets": {
+              "node": "8.9.3"
+            },
+            "useBuiltIns": "usage"
+          }
+        ],
+        "@babel/react",
+        "@babel/stage-0"
+      ],
+      "plugins": [
+        [
+          "@babel/syntax-object-rest-spread",
+          {
+            "useBuiltIns": true
+          }
+        ]
+      ]
     }
   }
 }
