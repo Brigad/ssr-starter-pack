@@ -119,7 +119,7 @@ The `Head` component contains meta tags which can be overridden anywhere in the 
 
 And finally, the last pieces of the puzzle! Nothing fancy here, we are following the [React-Router docs](https://reacttraining.com/react-router/) and using the appropriate router for each side.
 
-## CSS Modules working without FOUT
+## CSS Modules working without FOUC
 
 We got JS covered, but what about CSS? If you ever tried using [style-loader](https://github.com/webpack-contrib/style-loader) with SSR, you will know it doesn't work on the server. _People using CSS in JS are laughing in the back of the room._ Well, we're using CSS Modules and we're not giving up this easy!
 
@@ -559,7 +559,7 @@ const render = manifests => (req, res) => {
 
 And this is it! Your user will download your content once, and keep it in cache until it changes.
 
-## A proper development environment
+## A painless experience for the developer
 
 I talked a lot about the production setup, but what about development? It is quite similar to production, except we add hot reloading to the server and client, meaning we don't have to rebuild between files changes.
 
@@ -593,9 +593,7 @@ app.use(
 
 We will get rid of sourcemaps and hashes for faster builds, because we will have to build twice (once for the server, and once for the client).
 
-## A painless experience for the developer
-
-Last but not least: the developer experience. Let's quickly recap the steps to integrate SSR into an existing codebase, assuming you're already bundling your code with Webpack and using React-Router :
+Last but not least: how to migrate to and maintain? Let's quickly recap the steps to integrate SSR into an existing codebase, assuming you're already bundling your code with Webpack and using React-Router :
 
 * create two Webpack configs ([webpack.config.client.js](./webpack.config.client.js) and [webpack.config.server.js](./webpack.config.server.js))
 * create two server files ([app.js](./app.js) and [app.dev.js](./app.dev.js))
@@ -610,9 +608,3 @@ And once it is set up, the steps to create a new route:
 
 * add the route in the `AsyncBundles` and `Bundles` files
 * also add it in the `routes` file
-
-Aaaaaand that's it! You are all set up and ready to go to production. We have found this setup to be quite effective, and have been using it with [Amazon Elastic Beanstalk](https://aws.amazon.com/fr/elasticbeanstalk/), with a proper load-balancing configuration for a few months now.
-
-> Note on performance: as of now, React doesn't support async server side rendering. It [will in a few months](https://reactjs.org/blog/2017/09/26/react-v16.0.html#new-core-architecture), and it should change everything in terms of performance!
-
-That's pretty much all I have to share on the subject! Feel free to share your thoughts, to point out any mistakes I would have made and to submit improvements to the [ssr-starter-pack](https://github.com/Brigad/ssr-starter-pack)! PRs are more than welcome. Also, feel free to come discuss on the **#ssr** channel of [Reactiflux](https://www.reactiflux.com/)!
