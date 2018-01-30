@@ -10,7 +10,7 @@ Development:
 
 ```shell
 yarn
-yarn start:dev
+yarn dev
 ```
 
 Local build:
