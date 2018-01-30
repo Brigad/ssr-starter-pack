@@ -63,6 +63,6 @@
     "build:clean": "rm -rf public/dist && cd public && mkdir dist",
     "modules:clean": "rm -rf node_modules && mkdir node_modules",
     "start": "node app.js",
-    "start:dev": "node app.dev.js"
+    "dev": "node app.dev.js"
   }
 }
