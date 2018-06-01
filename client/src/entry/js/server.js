@@ -45,6 +45,8 @@ const render = manifests => (req, res) => {
   `
       : "";
 
+  console.log("bien");
+
   return res.send(`
     <!doctype html>
     <html>

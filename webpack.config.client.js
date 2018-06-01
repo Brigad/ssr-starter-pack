@@ -3,8 +3,8 @@ const jsonStableStringify = require("json-stable-stringify");
 const xxHash = require("xxhashjs");
 const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
-const NameAllModulesPlugin = require("name-all-modules-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
+const NameAllModulesPlugin = require("name-all-modules-plugin");
 const CircularDependencyPlugin = require("circular-dependency-plugin");
 const notifier = require("node-notifier");
 
@@ -143,7 +143,7 @@ const devPlugins = [
     debug: true
   }),
   new webpack.HotModuleReplacementPlugin(),
-  new webpack.NoEmitOnErrorsPlugin(),
+  // new webpack.NoEmitOnErrorsPlugin(),
   new CircularDependencyPlugin({
     exclude: /node_modules/,
     failOnError: true
@@ -167,18 +167,15 @@ const devPlugins = [
 ];
 
 const prodPlugins = [
-  new webpack.optimize.ModuleConcatenationPlugin(),
-  new webpack.NamedModulesPlugin(),
-  new webpack.NamedChunksPlugin(chunk => {
-    if (chunk.name) {
-      return chunk.name;
-    }
+  // new webpack.optimize.ModuleConcatenationPlugin(),
+  // new webpack.NamedModulesPlugin(),
+  // new webpack.NamedChunksPlugin(chunk => {
+  //   if (chunk.name) {
+  //     return chunk.name;
+  //   }
 
-    return chunk.mapModules(m => path.relative(m.context, m.request)).join("_");
-    // return Array.from(chunk.modulesIterable, m =>
-    //   path.relative(m.context, m.request)
-    // ).join("_");
-  }),
+  //   return chunk.mapModules(m => path.relative(m.context, m.request)).join("_");
+  // }),
   new NameAllModulesPlugin(),
   new ManifestPlugin({
     fileName: "client-manifest.json",
@@ -263,6 +260,9 @@ const config = {
     tls: "empty"
   },
   optimization: {
+    noEmitOnErrors: !IS_PRODUCTION,
+    concatenateModules: IS_PRODUCTION,
+    namedModules: IS_PRODUCTION,
     splitChunks: {
       cacheGroups: {
         vendor: {

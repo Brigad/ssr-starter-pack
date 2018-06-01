@@ -3,9 +3,9 @@ const jsonStableStringify = require("json-stable-stringify");
 const xxHash = require("xxhashjs");
 const webpack = require("webpack");
 const autoprefixer = require("autoprefixer");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-const Md5HashPlugin = require("md5-hash-webpack-plugin");
 const ManifestPlugin = require("webpack-manifest-plugin");
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const WebpackChunkHash = require("webpack-chunk-hash");
 const nodeExternals = require("webpack-node-externals");
 
 const NODE_ENV =
@@ -155,7 +155,7 @@ const devPlugins = [
 
 const prodPlugins = [
   new webpack.optimize.ModuleConcatenationPlugin(),
-  new Md5HashPlugin(),
+  new WebpackChunkHash(),
   new ManifestPlugin({
     fileName: "server-manifest.json",
     publicPath: PUBLIC_PATH
