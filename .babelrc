@@ -10,7 +10,7 @@
           }
         ],
         "@babel/react",
-        "@babel/stage-0"
+        "@babel/stage-3"
       ],
       "plugins": [
         [
@@ -34,7 +34,7 @@
           }
         ],
         "@babel/react",
-        "@babel/stage-0"
+        "@babel/stage-3"
       ],
       "plugins": [
         [
@@ -58,7 +58,7 @@
           }
         ],
         "@babel/react",
-        "@babel/stage-0"
+        "@babel/stage-3"
       ],
       "plugins": [
         [
