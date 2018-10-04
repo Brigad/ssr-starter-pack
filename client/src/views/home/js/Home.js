@@ -5,6 +5,7 @@ import { connect } from 'react-redux';
 
 import { allPosts } from 'src/actions/home';
 
+import Page from 'src/entry/js/components/Page';
 import styles from '../css/Home.scss';
 
 import ReactLogoImage from '../img/react-logo.png';
@@ -33,7 +34,7 @@ class Home extends Component {
     const { posts, isError, isLoading } = this.props.homeReducer;
 
     return (
-      <div className={styles.home}>
+      <Page title='Home' description='This is home page' className={styles.home}>
         <div className={styles.cover}>
           <div>
             {'Home sweet home!'}
@@ -58,7 +59,7 @@ class Home extends Component {
             <h3>Please wait...</h3>
           ) : <Post posts={posts} />}
         </div>
-      </div>
+      </Page>
     )
   }
 }
