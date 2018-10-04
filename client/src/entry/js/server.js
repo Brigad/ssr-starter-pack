@@ -1,13 +1,17 @@
 import React from 'react';
 import { renderToString } from 'react-dom/server';
 import { Helmet } from 'react-helmet';
+import { Provider } from 'react-redux';
 
 import App from './App';
 
+import storage from '../../store';
 import { initializeServerSideHeaders } from 'src/utils/EnvUtils';
 import { isMobileBrowser } from 'src/utils/MobileUtils';
 
 import { getPaceLoadingBarStyle, getPaceLoadingBarScript } from 'src/utils/InlineScriptsUtils';
+
+const store = storage();
 
 const render = manifests => (req, res) => {
   initializeServerSideHeaders(req.headers);
@@ -17,7 +21,9 @@ const render = manifests => (req, res) => {
   };
 
   const markup = renderToString(
-    <App type="server" url={req.url} context={context} />,
+    <Provider store={store} key='provider'>
+      <App type='server' url={req.url} context={context} />
+    </Provider>
   );
 
   if (context.url) {
@@ -31,6 +37,7 @@ const render = manifests => (req, res) => {
 
   const SplitPointsScript = `
     <script>
+      window.__PRELOADED_STATE__ = ${JSON.stringify(store.getState()).replace(/</g, '\\u003c')};
       window.splitPoints = ${JSON.stringify(context.splitPoints)};
       window.serverSideHeaders = ${JSON.stringify(req.headers)};
     </script>
@@ -48,13 +55,12 @@ const render = manifests => (req, res) => {
         ${helmet.link.toString()}
         ${helmet.script.toString()}
         ${helmet.noscript.toString()}
-        
+
         <link rel="stylesheet" href="${!manifests.server ? '/dist/server/main.css' : manifests.server['main.css']}" />
         ${LoadingBarStyle}
       </head>
       <body>
         <div id="content">${markup}</div>
-        
         ${LoadingBarScript}
         ${SplitPointsScript}
         ${ChunkManifestScript}

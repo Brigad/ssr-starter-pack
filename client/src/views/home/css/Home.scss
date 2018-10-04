@@ -1,20 +1,24 @@
-.cover {
-  color: white;
-  background: no-repeat center bottom;
-  background-size: cover;
-  background-image: url('../img/cover.jpg');
-  height: 100vh;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
+.home {
 
-  > div {
-    margin-bottom: 10px;
+  .cover {
+    color: white;
+    background: no-repeat center bottom;
+    background-size: cover;
+    background-image: url('../img/cover.jpg');
+    height: 50vh;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+
+    .logo {
+      height: 50px;
+    }
   }
 
-  .logo {
-    height: 100px;
+  .content {
+    text-align: center;
+    background-color: aliceblue;
   }
 }
