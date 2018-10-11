@@ -7,9 +7,37 @@ import App from './App';
 import { initializeServerSideHeaders } from 'src/utils/EnvUtils';
 import { isMobileBrowser } from 'src/utils/MobileUtils';
 
-import { getPaceLoadingBarStyle, getPaceLoadingBarScript } from 'src/utils/InlineScriptsUtils';
+import {
+  getPaceLoadingBarStyle,
+  getPaceLoadingBarScript,
+} from 'src/utils/InlineScriptsUtils';
 
-const render = manifests => (req, res) => {
+const ENTRY_POINTS = ['main'];
+
+const formatWebpackDevServerManifest = manifestObject =>
+  Object.entries(manifestObject.clientStats.assetsByChunkName).reduce(
+    (allManifest, [key, chunks]) => ({
+      ...allManifest,
+      ...(Array.isArray(chunks)
+        ? chunks.reduce(
+            (prev, curr) => ({
+              ...prev,
+              [`${key}${curr.endsWith('.css') ? '.css' : '.js'}`]: curr,
+            }),
+            {},
+          )
+        : { chunks }),
+    }),
+    {},
+  );
+
+const render = manifestObject => (req, res) => {
+  const IS_PRODUCTION = __NODE_ENV__ === 'production';
+
+  const manifest = IS_PRODUCTION
+    ? manifestObject
+    : formatWebpackDevServerManifest(manifestObject);
+
   initializeServerSideHeaders(req.headers);
 
   const context = {
@@ -29,15 +57,52 @@ const render = manifests => (req, res) => {
   const LoadingBarStyle = !isMobileBrowser() ? getPaceLoadingBarStyle() : '';
   const LoadingBarScript = !isMobileBrowser() ? getPaceLoadingBarScript() : '';
 
-  const SplitPointsScript = `
+  const splitPointsRegex = new RegExp(
+    [...ENTRY_POINTS, ...context.splitPoints].join('|'),
+  );
+  const SplitPointsStyles = Object.keys(manifest)
+    .filter(
+      chunkName =>
+        chunkName.endsWith('.css') &&
+        (chunkName.length > 100 || chunkName.match(splitPointsRegex)),
+    )
+    .sort(
+      a =>
+        ENTRY_POINTS.find(entryPoint => a.split('.')[0] === entryPoint)
+          ? -1
+          : 1,
+    )
+    .map(
+      chunk =>
+        `
+    <link rel="stylesheet" href="${!IS_PRODUCTION ? '/' : ''}${
+          manifest[chunk]
+        }" data-href="${!IS_PRODUCTION ? '/' : ''}${manifest[chunk]}" />
+  `,
+    )
+    .join('\n');
+
+  const InjectScripts = `
     <script>
       window.splitPoints = ${JSON.stringify(context.splitPoints)};
       window.serverSideHeaders = ${JSON.stringify(req.headers)};
     </script>
   `;
-  const ChunkManifestScript = manifests.client ? `
-    <script src="${manifests.client['manifest.js']}"></script>
-  ` : '';
+
+  const RuntimeScript = `
+    <script src="${
+      manifest && manifest['runtime.js']
+        ? manifest['runtime.js']
+        : '/client/runtime.js'
+    }"></script>
+  `;
+  const EntryScripts = ENTRY_POINTS.map(
+    entryPoint => `
+    <script src="${!IS_PRODUCTION ? '/' : ''}${
+      manifest[`${entryPoint}.js`]
+    }"></script>
+  `,
+  );
 
   return res.send(`
     <!doctype html>
@@ -48,18 +113,17 @@ const render = manifests => (req, res) => {
         ${helmet.link.toString()}
         ${helmet.script.toString()}
         ${helmet.noscript.toString()}
-        
-        <link rel="stylesheet" href="${!manifests.server ? '/dist/server/main.css' : manifests.server['main.css']}" />
+
+        ${SplitPointsStyles}
         ${LoadingBarStyle}
       </head>
       <body>
         <div id="content">${markup}</div>
-        
+
         ${LoadingBarScript}
-        ${SplitPointsScript}
-        ${ChunkManifestScript}
-        <script src="${!manifests.client ? '/dist/client/vendors.js' : manifests.client['vendors.js']}"></script>
-        <script src="${!manifests.client ? '/dist/client/main.js' : manifests.client['main.js']}"></script>
+        ${InjectScripts}
+        ${RuntimeScript}
+        ${EntryScripts}
       </body>
     </html>
   `);
