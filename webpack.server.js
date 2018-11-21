@@ -157,7 +157,7 @@ const plugins = [
 module.exports = webpackMerge(commonWebpackConfig, {
   name: 'server',
   target: 'node',
-  entry: ['./client/src/entry/js/polyfills', './client/src/entry/js/server'],
+  entry: ['./src/entry/js/polyfills', './src/entry/js/server'],
   output: {
     filename: 'server/[name].js',
     sourceMapFilename: 'server/[name].map.js',

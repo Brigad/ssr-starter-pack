@@ -6,11 +6,7 @@ const IS_PRODUCTION = NODE_ENV === 'production';
 const IS_LOCAL = !!process.env.LOCAL;
 const PUBLIC_PATH = !IS_PRODUCTION || IS_LOCAL ? '/' : process.env.ASSETS_URL;
 
-const roots = [
-  'node_modules',
-  path.join(__dirname, 'node_modules'),
-  path.join(__dirname, 'client'),
-];
+const roots = ['node_modules', path.join(__dirname, 'node_modules'), __dirname];
 
 module.exports = {
   mode: IS_PRODUCTION ? 'production' : 'development',
