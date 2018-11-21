@@ -10,7 +10,6 @@ This starter pack is designed to be a simple solution to start a React project w
 - Babel 7
 - CSS splitting and critical loading
 - Typescript support
-- [Link to blog post]() (to come) explaining the update in depth
 
 ### 1.0
 
