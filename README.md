@@ -2,7 +2,19 @@
 
 This starter pack is designed to be a simple solution to start a React project with Server Side Rendering, or to help you integrate it into an existing project.
 
-You can find some detailed explanations on [our blog](https://engineering.brigad.co/you-might-not-need-a-server-side-rendering-framework-f4241ca59573).
+## Changelog
+
+### 2.0
+
+- Webpack 4
+- Babel 7
+- CSS splitting and critical loading
+- Typescript support
+- [Link to blog post]() (to come) explaining the update in depth
+
+### 1.0
+
+- Initial iteration with Webpack 3 and Babel 6, [link to blog post](https://engineering.brigad.co/you-might-not-need-a-server-side-rendering-framework-f4241ca59573)
 
 ## Getting started
 
@@ -95,11 +107,11 @@ For all of this to work together, we will create two entry points.
 
 The server entry will generate the markup on the server and send it to the client. A few things to note:
 
-* if a redirection happens during the rendering of the app, it will immediately redirect the client, and they will only receive one markup
-* we are injecting the `splitPoints` and `serverSideHeaders` into the window, so the client can use them
-* we are importing the CSS file and JS chunks differently whether we are in development mode or production mode, but we will cover this part later
-* we are using [react-helmet](https://github.com/nfl/react-helmet) to generate dynamic head tag
-* we are using [pace.js](http://github.hubspot.com/pace/docs/welcome/) to show the user the site isn't responsive yet, but this is a matter of preference and totally optional
+- if a redirection happens during the rendering of the app, it will immediately redirect the client, and they will only receive one markup
+- we are injecting the `splitPoints` and `serverSideHeaders` into the window, so the client can use them
+- we are importing the CSS file and JS chunks differently whether we are in development mode or production mode, but we will cover this part later
+- we are using [react-helmet](https://github.com/nfl/react-helmet) to generate dynamic head tag
+- we are using [pace.js](http://github.hubspot.com/pace/docs/welcome/) to show the user the site isn't responsive yet, but this is a matter of preference and totally optional
 
 [client.js](./client/src/entry/js/client.js)
 
@@ -121,37 +133,28 @@ And finally, the last pieces of the puzzle! Nothing fancy here, we are following
 
 ## CSS Modules working without FOUC
 
-We got JS covered, but what about CSS? If you ever tried using [style-loader](https://github.com/webpack-contrib/style-loader) with SSR, you will know it doesn't work on the server. _People using CSS in JS are laughing in the back of the room._ Well, we're using CSS Modules and we're not giving up this easy!
+We got JS covered, but what about CSS? If you ever tried using [style-loader](https://github.com/webpack-contrib/style-loader) with SSR, you will know it doesn't work on the server. _People using CSS in JS are laughing in the back of the room._ Well, we're using CSS Modules and we're not giving up that easy!
 
-The solution here is rather simple. We will use [extract-text-webpack-plugin](https://github.com/webpack-contrib/extract-text-webpack-plugin) on the server to bundle our CSS in a separate file, which will be requested by the HTML we send to our users.
-While we're at it, we should use [autoprefixer](https://github.com/postcss/autoprefixer) with a [.browserslistrc](https://github.com/ai/browserslist) to make sure our CSS works on every browser we wish to support!
+The solution here is rather simple. We will use [mini-css-extract-plugin](https://github.com/webpack-contrib/mini-css-extract-plugin) on the server to bundle our CSS in separate files, which will be requested by the HTML we send to our users.
+While we're at it, we should use [autoprefixer](https://github.com/postcss/autoprefixer) with a [browserslist](https://github.com/ai/browserslist) file to make sure our CSS works on every browser we wish to support!
 
 ```js
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const autoprefixer = require('autoprefixer');
 
-const extractCSS = new ExtractTextPlugin({
-  filename: !IS_PRODUCTION
-    ? 'server/[name].css'
-    : 'server/[name].[contenthash:8].css',
-  ignoreOrder: true,
-});
-
-const getCommonCSSLoaders = () => [
+const getStylesLoaders = (enableCSSModules, additionalLoaders = 0) => [
   {
-    loader: 'css-loader',
+    loader: 'css-loader/locals',
     options: {
-      modules: true,
-      importLoaders: 1,
-      localIdentName: !IS_PRODUCTION
-        ? '[name]_[local]_[hash:base64:3]'
-        : '[local]_[hash:base64:3]',
-      minimize: stripUselessLoaderOptions(IS_PRODUCTION),
+      modules: enableCSSModules,
+      importLoaders: 1 + additionalLoaders,
+      localIdentName: IS_PRODUCTION
+        ? '[local]_[hash:base64:5]'
+        : '[name]_[local]-[hash:base64:5]',
     },
   },
   {
     loader: 'postcss-loader',
     options: {
-      sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
       ident: 'postcss',
       plugins: () => [
         require('postcss-flexbugs-fixes'),
@@ -160,86 +163,7 @@ const getCommonCSSLoaders = () => [
           flexbox: 'no-2009',
         }),
       ],
-    },
-  },
-];
-
-const rules = [
-  {
-    test: /\.css$/,
-    loader: extractCSS.extract({
-      fallback: 'style-loader',
-      use: [...getCommonCSSLoaders()],
-    }),
-  },
-  {
-    test: /\.scss$/,
-    loader: extractCSS.extract({
-      fallback: 'style-loader',
-      use: [
-        ...getCommonCSSLoaders(),
-        ...(!IS_PRODUCTION
-          ? [
-              {
-                loader: 'resolve-url-loader',
-              },
-            ]
-          : []),
-        {
-          loader: 'sass-loader',
-          options: !IS_PRODUCTION
-            ? {
-                sourceMap: true,
-              }
-            : undefined,
-        },
-      ],
-    }),
-  },
-];
-
-const plugins = [extractCSS];
-```
-
-[webpack.config.server.js](./webpack.config.server.js)
-
-```js
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
-
-const extractCSS = new ExtractTextPlugin({
-  filename: !IS_PRODUCTION
-    ? 'server/[name].css'
-    : 'server/[name].[contenthash:8].css',
-  ignoreOrder: true,
-});
-
-const getCommonCSSLoaders = () => [
-  {
-    loader: 'style-loader',
-  },
-  {
-    loader: 'css-loader',
-    options: {
-      modules: true,
-      importLoaders: 1,
-      localIdentName: !IS_PRODUCTION
-        ? '[name]_[local]_[hash:base64:3]'
-        : '[local]_[hash:base64:3]',
-      minimize: stripUselessLoaderOptions(IS_PRODUCTION),
-    },
-  },
-  {
-    loader: 'postcss-loader',
-    options: {
       sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
-      ident: 'postcss',
-      plugins: () => [
-        require('postcss-flexbugs-fixes'),
-        autoprefixer({
-          env: NODE_ENV,
-          flexbox: 'no-2009',
-        }),
-      ],
     },
   },
 ];
@@ -247,50 +171,132 @@ const getCommonCSSLoaders = () => [
 const rules = [
   {
     test: /\.css$/,
-    use: [...getCommonCSSLoaders()],
+    include,
+    exclude,
+    use: getStylesLoaders(true),
+  },
+  {
+    test: /\.css$/,
+    include: exclude,
+    use: getStylesLoaders(false),
   },
   {
     test: /\.scss$/,
+    include,
+    exclude,
     use: [
-      ...getCommonCSSLoaders(),
-      ...(!IS_PRODUCTION
-        ? [
-            {
-              loader: 'resolve-url-loader',
-            },
-          ]
-        : []),
+      ...getStylesLoaders(true, 1),
       {
         loader: 'sass-loader',
-        options: !IS_PRODUCTION
-          ? {
-              sourceMap: true,
-            }
-          : undefined,
+        options: {
+          sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
+        },
       },
     ],
   },
 ];
 ```
 
-[webpack.config.client.js](./webpack.config.client.js)
-
-And if you remember, in the markup the client will receive:
+[webpack.config.server.js](./webpack.config.server.js)
 
 ```js
-<link
-  rel="stylesheet"
-  href="${!manifests.server ? '/dist/server/main.css' : manifests.server['main.css']}"
-/>
+const autoprefixer = require('autoprefixer');
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const OptimizeCssAssetsPlugin = require('optimize-css-assets-webpack-plugin');
+
+const getStylesLoaders = (enableCSSModules, additionalLoaders = 0) => [
+  {
+    loader: MiniCssExtractPlugin.loader,
+  },
+  {
+    loader: 'css-loader',
+    options: {
+      modules: enableCSSModules,
+      importLoaders: 1 + additionalLoaders,
+      localIdentName: IS_PRODUCTION
+        ? '[local]_[hash:base64:5]'
+        : '[name]_[local]-[hash:base64:5]',
+      sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
+    },
+  },
+  {
+    loader: 'postcss-loader',
+    options: {
+      ident: 'postcss',
+      plugins: () => [
+        require('postcss-flexbugs-fixes'),
+        autoprefixer({
+          env: NODE_ENV,
+          flexbox: 'no-2009',
+        }),
+      ],
+      sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
+    },
+  },
+];
+
+const rules = [
+  {
+    test: /\.css$/,
+    include,
+    exclude,
+    use: getStylesLoaders(true),
+  },
+  {
+    test: /\.css$/,
+    include: exclude,
+    use: getStylesLoaders(false),
+  },
+  {
+    test: /\.scss$/,
+    include,
+    exclude,
+    use: [
+      ...getStylesLoaders(true, 1),
+      {
+        loader: 'sass-loader',
+        options: {
+          sourceMap: stripUselessLoaderOptions(!IS_PRODUCTION),
+        },
+      },
+    ],
+  },
+];
+
+const plugins = [
+  new MiniCssExtractPlugin({
+    filename: 'client/[name].[contenthash].css',
+    chunkFilename: 'client/chunks/[name].[contenthash].chunk.css',
+  }),
+];
+
+module.exports = {
+  optimization: {
+    minimizer: stripUselessLoaderOptions(
+      IS_PRODUCTION && [new OptimizeCssAssetsPlugin()],
+    ),
+  },
+};
+```
+
+[webpack.config.client.js](./webpack.config.client.js)
+
+And in the markup, the client will receive:
+
+```js
+.map(
+      chunk =>
+        `
+    <link rel="stylesheet" href="${!IS_PRODUCTION ? '/' : ''}${
+          manifest[chunk]
+        }" data-href="${!IS_PRODUCTION ? '/' : ''}${manifest[chunk]}" />
+  `,
+    )
 ```
 
 [server.js](./client/src/entry/js/server.js)
 
 CSS is covered too, and easily! We haven't noticed any Flash of Unstyled Content with this approach (testing with throttled connection), so I think you are good to continue reading!
-
-_Note:_ be sure to test it in production mode, because it may flash in development mode
-
-_Note2:_ my initial idea was to use something like [purifycss](https://github.com/purifycss/purifycss) to strip any CSS not used in the HTML we would send to the user, and inline the result in the `<head />`. Unfortunately, after several tests I couldn't manage to make it run in under 4 seconds for fairly small pages.
 
 ## Images served by S3 (or some other CDN)
 
@@ -376,42 +382,20 @@ If you're not familiar with the notion of long-term caching, I suggest you read 
 
 ### Bundling node modules in a vendors chunk
 
-Node modules are heavy, and change less often than your code. It would be a shame if the client would have to download node modules all over again each time a new feature is deployed! It _would_, but isn't, because we will bundle our node modules in a separate chunk, which will only be invalidated when dependencies get updated.
-
-Also, code which is common to multiple chunks could be exported to a separate chunk so it only gets downloaded once (and when it changes, of course).
+With Webpack 3, we had to handle code splitting ourselves. But now, all we have to do is:
 
 ```js
-const plugins = [
-  new webpack.optimize.CommonsChunkPlugin({
-    name: 'client',
-    async: 'common',
-    children: true,
-    minChunks: (module, count) => {
-      if (module.resource && /^.*\.(css|scss)$/.test(module.resource)) {
-        return false;
-      }
-      return (
-        count >= 3 && module.context && !module.context.includes('node_modules')
-      );
-    },
-  }),
-  new webpack.optimize.CommonsChunkPlugin({
-    name: 'client',
-    children: true,
-    minChunks: module =>
-      module.context && module.context.includes('node_modules'),
-  }),
-  new webpack.optimize.CommonsChunkPlugin({
-    name: 'vendors',
-    minChunks: module =>
-      module.context && module.context.includes('node_modules'),
-  }),
-];
+modules.exports = {
+  mode: 'production',
+  optimization: {
+    runtimeChunk: 'single',
+  },
+};
 ```
 
 [webpack.config.client.js](./webpack.config.client.js)
 
-Now, modules imported in 3 chunks or more will go in the `common` chunk, and node modules will go into the `vendors` chunk.
+Way easier!
 
 ```js
 const nodeExternals = require('webpack-node-externals');
@@ -437,40 +421,37 @@ const rules = {
   },
 };
 ...
+const plugins = [
+  new MiniCssExtractPlugin({
+    filename: 'client/[name].[contenthash].css',
+    chunkFilename: 'client/chunks/[name].[contenthash].chunk.css',
+  }),
+];
+...
 output: {
-  filename: !IS_PRODUCTION ? 'client/[name].js' : 'client/[name].[chunkhash].js',
-  chunkFilename: !IS_PRODUCTION ? 'client/chunks/[name].chunk.js' : 'client/chunks/[name].[chunkhash].chunk.js',
+  filename: IS_PRODUCTION
+      ? 'client/[name].[contenthash].js'
+      : 'client/[name].js',
+    chunkFilename: IS_PRODUCTION
+      ? 'client/chunks/[name].[contenthash].chunk.js'
+      : 'client/chunks/[name].chunk.js',
 },
 ```
 
 [webpack.config.client.js](./webpack.config.client.js)
 
 ```js
-const extractCSS = new ExtractTextPlugin({
-  filename: !IS_PRODUCTION ? 'server/[name].css' : 'server/[name].[contenthash:8].css',
-});
-...
-const rules = {
-  {
-    loader: 'url-loader',
-    options: {
-      name: 'images/[name].[hash].[ext]',
-    },
+{
+  loader: 'css-loader/locals',
+  options: {
+    localIdentName: IS_PRODUCTION
+      ? '[local]_[hash:base64:5]'
+      : '[name]_[local]-[hash:base64:5]',
   },
-};
+},
 ```
 
 [webpack.config.server.js](./webpack.config.server.js)
-
-Also, we will use [md5-hash-webpack-plugin](https://github.com/adventure-yunfei/md5-hash-webpack-plugin) for more consistent hashes.
-
-```js
-const Md5HashPlugin = require('md5-hash-webpack-plugin');
-
-const prodPlugins = [new Md5HashPlugin()];
-```
-
-[webpack.config.client.js](./webpack.config.client.js)
 
 ### Mapping hashed names to predictable names
 
@@ -481,74 +462,104 @@ const ManifestPlugin = require('webpack-manifest-plugin');
 
 const prodPlugins = [
   new ManifestPlugin({
-    fileName: 'client-manifest.json',
-    publicPath: PUBLIC_PATH,
+    fileName: 'client/manifest.json',
+    filter: ({ path: filePath }) => !filePath.endsWith('.map.js'),
   }),
 ];
 ```
 
 [webpack.config.client.js](./webpack.config.client.js)
 
-```js
-const ManifestPlugin = require('webpack-manifest-plugin');
-
-const prodPlugins = [
-  new ManifestPlugin({
-    fileName: 'server-manifest.json',
-    publicPath: PUBLIC_PATH,
-  }),
-];
-```
-
-[webpack.config.server.js](./webpack.config.server.js)
-
-This code will output two files containing our maps.
+This code will output a manifest mapping chunk names to their paths.
 
 ### Including assets in the document
 
 The last step is to include our assets in the document.
 
 ```js
-const manifests = {};
-manifests.server = require('./public/dist/server-manifest');
-manifests.client = require('./public/dist/client-manifest');
+const manifest = require('./public/dist/client/manifest');
 
-app.use(serverRender(manifests));
+app.use(serverRender(manifest));
 ```
 
 [app.js](./app.js)
 
-_Note: in development, `serverRender` will also get called (by Webpack-dev-server) with an object as a parameter_
+_Note: in development, `serverRender` will also get called (by Webpack-dev-server) with a manifest object as a parameter_
 
 ```js
-const render = manifests => (req, res) => {
+const formatWebpackDevServerManifest = manifestObject =>
+  Object.entries(manifestObject.clientStats.assetsByChunkName).reduce(
+    (allManifest, [key, chunks]) => ({
+      ...allManifest,
+      ...(Array.isArray(chunks)
+        ? chunks.reduce(
+            (prev, curr) => ({
+              ...prev,
+              [`${key}${curr.endsWith('.css') ? '.css' : '.js'}`]: curr,
+            }),
+            {},
+          )
+        : { chunks }),
+    }),
+    {},
+  );
+
+const render = manifestObject => (req, res) => {
+  const IS_PRODUCTION = __NODE_ENV__ === 'production';
+
+  const manifest = IS_PRODUCTION
+    ? manifestObject
+    : formatWebpackDevServerManifest(manifestObject);
+
   const markup = renderToString(
     <App type="server" url={req.url} context={context} />,
+  );
+
+  const SplitPointsStyles = Object.keys(manifest)
+    .filter(
+      chunkName =>
+        chunkName.endsWith('.css') &&
+        (chunkName.length > 100 || chunkName.match(splitPointsRegex)),
+    )
+    .sort(a =>
+      ENTRY_POINTS.find(entryPoint => a.split('.')[0] === entryPoint) ? -1 : 1,
+    )
+    .map(
+      chunk =>
+        `
+    <link rel="stylesheet" href="${!IS_PRODUCTION ? '/' : ''}${
+          manifest[chunk]
+        }" data-href="${!IS_PRODUCTION ? '/' : ''}${manifest[chunk]}" />
+  `,
+    )
+    .join('\n');
+
+  const RuntimeScript = `
+    <script src="${
+      manifest && manifest['runtime.js']
+        ? manifest['runtime.js']
+        : '/client/runtime.js'
+    }"></script>
+  `;
+  const EntryScripts = ENTRY_POINTS.map(
+    entryPoint => `
+    <script src="${!IS_PRODUCTION ? '/' : ''}${
+      manifest[`${entryPoint}.js`]
+    }"></script>
+  `,
   );
 
   return res.send(`
     <!doctype html>
     <html>
       <head>
-        <link rel="stylesheet" href="${
-          !manifests.server
-            ? '/dist/server/main.css'
-            : manifests.server['main.css']
-        }" />
+        ${SplitPointsStyles}
       </head>
       <body>
         <div id="content">${markup}</div>
 
-        <script src="${
-          !manifests.client
-            ? '/dist/client/vendors.js'
-            : manifests.client['vendors.js']
-        }"></script>
-        <script src="${
-          !manifests.client
-            ? '/dist/client/main.js'
-            : manifests.client['main.js']
-        }"></script>
+        ${RuntimeScript}
+        ${EntryScripts}
       </body>
     </html>
   `);
@@ -561,7 +572,7 @@ And this is it! Your user will download your content once, and keep it in cache 
 
 ## A painless experience for the developer
 
-I talked a lot about the production setup, but what about development? It is quite similar to production, except we add hot reloading to the server and client, meaning we don't have to rebuild between files changes.
+I talked a lot about the production setup, but what about development? It is quite similar to production, except we add hot reloading to the server and client, meaning we don't have to rebuild between file changes.
 
 ```js
 const webpack = require('webpack');
@@ -577,16 +588,12 @@ const clientCompiler = multiCompiler.compilers[0];
 app.use(
   webpackDevMiddleware(multiCompiler, {
     publicPath: clientConfig.output.publicPath,
-    noInfo: true,
-    stats: { children: false },
+    logLevel: 'warn',
+    stats: 'minimal',
   }),
 );
 app.use(webpackHotMiddleware(clientCompiler));
-app.use(
-  webpackHotServerMiddleware(multiCompiler, {
-    serverRendererOptions: { outputPath: clientConfig.output.path },
-  }),
-);
+app.use(webpackHotServerMiddleware(multiCompiler));
 ```
 
 [app.dev.js](./app.dev.js)
@@ -595,16 +602,16 @@ We will get rid of sourcemaps and hashes for faster builds, because we will have
 
 Last but not least: how to migrate to and maintain? Let's quickly recap the steps to integrate SSR into an existing codebase, assuming you're already bundling your code with Webpack and using React-Router :
 
-* create two Webpack configs ([webpack.config.client.js](./webpack.config.client.js) and [webpack.config.server.js](./webpack.config.server.js))
-* create two server files ([app.js](./app.js) and [app.dev.js](./app.dev.js))
-* create two entry points ([client.js](./client/src/entry/js/client.js) and [server.js](./client/src/entry/js/server.js))
-* adapt your app entry ([App.js](./client/src/entry/js/App.js))
-* list all of your routes in the three files ([AsyncBundles.js](./client/src/entry/js/components/AsyncBundles.js), [Bundles.js](./client/src/entry/js/components/Bundles.js) and [routes.js](./client/src/entry/js/components/routes.js))
-* adapt route components which render sub-routes so they can also be rendered ([MainLayout.js](./client/src/views/main-layout/js/MainLayout.js))
+- create two Webpack configs ([webpack.config.client.js](./webpack.config.client.js) and [webpack.config.server.js](./webpack.config.server.js))
+- create two server files ([app.js](./app.js) and [app.dev.js](./app.dev.js))
+- create two entry points ([client.js](./client/src/entry/js/client.js) and [server.js](./client/src/entry/js/server.js))
+- adapt your app entry ([App.js](./client/src/entry/js/App.js))
+- list all of your routes in the three files ([AsyncBundles.js](./client/src/entry/js/components/AsyncBundles.js), [Bundles.js](./client/src/entry/js/components/Bundles.js) and [routes.js](./client/src/entry/js/components/routes.js))
+- adapt route components which render sub-routes so they can also be rendered ([MainLayout.js](./client/src/views/main-layout/js/MainLayout.js))
 
 _When I said create, you obviously read **borrow from this article**_
 
 And once it is set up, the steps to create a new route:
 
-* add the route in the `AsyncBundles` and `Bundles` files
-* also add it in the `routes` file
+- add the route in the `AsyncBundles` and `Bundles` files
+- also add it in the `routes` file

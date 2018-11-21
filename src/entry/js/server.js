@@ -64,13 +64,12 @@ const render = manifestObject => (req, res) => {
     .filter(
       chunkName =>
         chunkName.endsWith('.css') &&
+        // Caveat: if chunkName.length > 100, then the name has been ellipsed and we can't know for sure
+        // if we need it... So we include it just in case
         (chunkName.length > 100 || chunkName.match(splitPointsRegex)),
     )
-    .sort(
-      a =>
-        ENTRY_POINTS.find(entryPoint => a.split('.')[0] === entryPoint)
-          ? -1
-          : 1,
+    .sort(a =>
+      ENTRY_POINTS.find(entryPoint => a.split('.')[0] === entryPoint) ? -1 : 1,
     )
     .map(
       chunk =>
