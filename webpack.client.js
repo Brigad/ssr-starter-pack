@@ -188,7 +188,7 @@ const plugins = [
 module.exports = webpackMerge(commonWebpackConfig, {
   name: 'client',
   target: 'web',
-  entry: ['./client/src/entry/js/polyfills', './client/src/entry/js/client'],
+  entry: ['./src/entry/js/polyfills', './src/entry/js/client'],
   output: {
     filename: IS_PRODUCTION
       ? 'client/[name].[contenthash].js'
