@@ -1,6 +1,10 @@
+// Image component to be used with https://github.com/Brigad/ideal-image-loader
+
+/* eslint-disable */
 import GatsbyImage from 'gatsby-image';
 import PropTypes from 'prop-types';
 import React from 'react';
+/* eslint-enable */
 
 const Image = ({ src, alt, height, width, className, fluid }) => {
   const x1 = src && src.x1 ? src.x1 : src;
@@ -72,6 +76,7 @@ const Image = ({ src, alt, height, width, className, fluid }) => {
 
 Image.propTypes = {
   src: PropTypes.oneOfType([
+    // The image has been loaded with https://github.com/Brigad/ideal-image-loader
     PropTypes.shape({
       x1: PropTypes.shape({
         src: PropTypes.string.isRequired,
@@ -89,6 +94,7 @@ Image.propTypes = {
         webp: PropTypes.string,
       }).isRequired,
     }),
+    // The image is a distant URL or was not loaded with https://github.com/Brigad/ideal-image-loader
     PropTypes.string,
   ]).isRequired,
   alt: PropTypes.string.isRequired,
