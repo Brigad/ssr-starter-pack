@@ -10,8 +10,7 @@ const app = express();
 
 app.use(compression());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static('public', { maxAge: '365d' }));
-app.use(express.static('public/assets', { maxAge: '365d' }));
+app.use(express.static('public/dist', { maxAge: '365d' }));
 app.use(serverRender(manifest));
 
 app.listen(PORT_NUMBER, () => {
