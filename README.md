@@ -2,6 +2,8 @@
 
 This starter pack is designed to be a simple solution to start a React project with Server Side Rendering, or to help you integrate it into an existing project.
 
+## [Release article](https://engineering.brigad.co/introducing-redux-rest-easy-6e9a91af4f59)
+
 ## Changelog
 
 ### 2.1
