@@ -1,8 +1,0 @@
-[production]
-> 1%
-last 4 versions
-Firefox ESR
-not ie < 10
-
-[development]
-last 1 version
