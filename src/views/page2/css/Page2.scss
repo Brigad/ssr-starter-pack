@@ -1,0 +1,32 @@
+.container {
+  position: relative;
+  height: 100vh;
+
+  .cover {
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    position: absolute !important;
+    height: 100% !important;
+    width: 100% !important;
+
+    > img {
+      height: 100% !important;
+      object-fit: cover;
+    }
+  }
+
+  .content {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    text-align: center;
+    color: white;
+
+    .title {
+      margin: 20% 0 10px;
+      text-shadow: 0 0 5px #FFF, 0 0 10px #FFF, 0 0 15px #FFF, 0 0 20px #49ff18, 0 0 30px #49FF18, 0 0 40px #49FF18, 0 0 55px #49FF18, 0 0 75px #49ff18;
+    }
+  }
+}
