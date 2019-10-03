@@ -1,0 +1,7 @@
+[production]
+> 0.25%
+not op_mini all
+ie >= 10
+
+[development]
+last 1 version
