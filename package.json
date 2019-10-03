@@ -62,7 +62,7 @@
     "build": "cross-env NODE_ENV=production ASSETS_URL=https://your-cdn.com/ webpack --config webpack.config.js",
     "build:local": "cross-env NODE_ENV=production LOCAL=true webpack --config webpack.config.js",
     "build:clean": "rm -rf public/dist && cd public && mkdir dist",
-    "modules:clean": "rm -rf node_modules && mkdir node_modules",
+    "modules:clean": "rm -rf node_modules && mkdir node_modules && rm -rf yarn.lock && rm -rf package-lock.json",
     "start": "node app.js",
     "dev": "node app.dev.js"
   }

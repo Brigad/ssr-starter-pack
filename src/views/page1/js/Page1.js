@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import Image from 'src/components/image/js/Image';
+import Base from 'src/components/base/js/Base';
 
 import styles from '../css/Page1.scss';
 
@@ -9,7 +10,7 @@ import Cover from '../img/cover.jpg';
 
 const Page1 = () => {
   return (
-    <div className={styles.container}>
+    <Base title='Page1' description='This is home page1' className={styles.container}>
       <Image
         src={Cover}
         alt="cover"
@@ -23,7 +24,7 @@ const Page1 = () => {
           <Link to="/">{'Back to Home'}</Link>
         </div>
       </div>
-    </div>
+    </Base>
   );
 };
 
