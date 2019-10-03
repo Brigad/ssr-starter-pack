@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 import Image from 'src/components/image/js/Image';
+import Base from 'src/components/base/js/Base';
 
 import styles from '../css/Home.scss';
 
@@ -10,7 +11,7 @@ import ReactLogoImage from '../img/react-logo.png';
 
 const Home = () => {
   return (
-    <div className={styles.container}>
+    <Base title='Home' description='This is home page' className={styles.container}>
       <Image
         src={Cover}
         alt="cover"
@@ -33,7 +34,7 @@ const Home = () => {
           <Link to="/page2">{'Page 2'}</Link>
         </div>
       </div>
-    </div>
+    </Base>
   );
 };
 
